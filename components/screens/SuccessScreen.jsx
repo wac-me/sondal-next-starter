@@ -7,7 +7,7 @@ import { useState, useEffect, useRef } from "react";
 import { Search, MessageCircle, Share2, ChevronRight, User, Lock, Eye, Plus, BarChart2 } from "lucide-react";
 import { theme } from "@/lib/theme";
 import { StickyHeader } from "@/components/layout/StickyHeader";
-import { LogoMark, Tag, VoteButtons, MiniBarChart, EmptyState, SkeletonCard, Toggle } from "@/components/ui";
+import { LogoMark, Tag, VoteButtons, MiniBarChart, EmptyState, SkeletonCard, Toggle, CopyField } from "@/components/ui";
 
 // Dane mockowe (inline) — przenieś do propsów lub pobierz z Supabase
 // gdy będziesz podłączać konkretny ekran do bazy danych.

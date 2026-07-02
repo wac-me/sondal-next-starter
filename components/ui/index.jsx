@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { theme } from "@/lib/theme";
 import { BarChart2, MessageCircle } from "lucide-react";
 
@@ -141,3 +142,27 @@ export function Toggle({ label, icon, value, onChange }) {
     </div>
   );
 }
+
+// ─── Copy field (tekst z przyciskiem kopiowania) ─────────
+export function CopyField({ label, value }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div style={{ background: theme.surface, border: `1px solid ${theme.border}`, borderRadius: 12, padding: "12px 14px", marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ color: theme.textMuted, fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", margin: "0 0 6px" }}>{label}</p>
+        <p style={{ color: theme.text, fontFamily: "Inter, sans-serif", fontSize: 13, margin: 0, wordBreak: "break-all" }}>{value}</p>
+      </div>
+      <button onClick={handleCopy} style={{ background: copied ? theme.accent : theme.accentDim, color: copied ? "#fff" : theme.accent, border: "none", borderRadius: 8, padding: "8px 12px", fontFamily: "Inter, sans-serif", fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", transition: "all 0.2s", flexShrink: 0 }}>
+        {copied ? "✓" : "Kopiuj"}
+      </button>
+    </div>
+  );
+}
+
