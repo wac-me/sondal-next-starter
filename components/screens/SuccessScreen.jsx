@@ -13,7 +13,7 @@ import { LogoMark, Tag, VoteButtons, MiniBarChart, EmptyState, SkeletonCard, Tog
 // gdy będziesz podłączać konkretny ekran do bazy danych.
 
 export function SuccessScreen({ pollData, onReset, onGoToDiscover, onPreviewShared, onPreviewEmbed }) {
-  const slug = "x/"+Math.random().toString(36).slice(2,7);
+  const slug = pollData?.slug || `x/${Math.random().toString(36).slice(2, 7)}`;
   const link = `sondal.top/${slug}`;
   const iframe = `<iframe src="https://sondal.top/${slug}/embed" width="100%" height="320" frameborder="0"></iframe>`;
   return (
