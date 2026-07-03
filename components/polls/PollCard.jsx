@@ -31,7 +31,8 @@ export function PollCard({ poll }) {
           </div>
           <div>
             <span style={{ color: theme.text, fontSize: 12, fontFamily: "Inter, sans-serif", fontWeight: 600 }}>
-              {poll.profiles?.handle || poll.user || "Anonim"}
+                            {poll.is_anonymous ? "Anonim" : (poll.profiles?.handle || poll.user || "Anonim")}
+
             </span>
             <span style={{ color: theme.textDim, fontSize: 11, fontFamily: "Inter, sans-serif", marginLeft: 6 }}>
               {poll.time || ""}
