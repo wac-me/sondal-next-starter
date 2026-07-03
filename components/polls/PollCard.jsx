@@ -27,11 +27,11 @@ export function PollCard({ poll }) {
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <div style={{ width: 28, height: 28, borderRadius: "50%", background: theme.indigo, border: `1px solid ${theme.borderAccent}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: theme.accent, fontWeight: 700, flexShrink: 0 }}>
             {/* poll.profiles?.avatar_letter (Supabase) lub poll.avatar (makieta) */}
-            {poll.profiles?.avatar_letter || poll.avatar}
+            {poll.profiles?.avatar_letter || poll.avatar || "?"}
           </div>
           <div>
             <span style={{ color: theme.text, fontSize: 12, fontFamily: "Inter, sans-serif", fontWeight: 600 }}>
-              {poll.profiles?.handle || poll.user}
+              {poll.profiles?.handle || poll.user || "Anonim"}
             </span>
             <span style={{ color: theme.textDim, fontSize: 11, fontFamily: "Inter, sans-serif", marginLeft: 6 }}>
               {poll.time || ""}
