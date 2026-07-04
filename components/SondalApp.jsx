@@ -54,20 +54,37 @@ export function SondalApp({ communityPolls: initialPolls = [], editorialPolls = 
 
   // ── Po dodaniu nowej sondy — dodaj ją optymistycznie do feedu ──
   // Nie czekamy na odświeżenie strony — sonda pojawia się natychmiast
-  const handleSuccess = (data) => {
+  const handleSuccess = async (data) => {
     setPollData(data);
     setCreatorStep("success");
 
+    // Pobierz prawdziwe opcje z bazy po utworzeniu sondy
+    const supabase = createClient();
+    let realOptions = [];
+
+    try {
+      const { data: options } = await supabase
+        .from('poll_options')
+        .select('id, label, position')
+        .eq('poll_id', data.pollId)
+        .order('position');
+      realOptions = options || [];
+    } catch (err) {
+      console.error("Failed to fetch poll options:", err);
+      // Fallback do tymczasowych opcji jeśli pobranie się nie uda
+      realOptions = (data.options || []).map((label, i) => ({ id: `fallback-${i}`, label, position: i }));
+    }
+
     // Zbuduj mockowy obiekt zgodny ze strukturą z bazy
     const newPoll = {
-      id:         data.pollId || `temp-${Date.now()}`,
+      id:         data.pollId,
       slug:       data.slug   || "",
       question:   data.question,
       category:   data.category,
       created_at: new Date().toISOString(),
       is_anonymous: data.isAnon,
       profiles:   data.isAnon ? null : { handle: "wac", avatar_letter: "A" }, // null = Anonim
-      poll_options: (data.options || []).map((label, i) => ({ id: `opt-${i}`, label, position: i })),
+      poll_options: realOptions,
       // Pola pomocnicze dla lokalnego wyświetlania
       totalVotes: 0,
       baseSplit:  Array(data.options?.length || 2).fill(Math.floor(100 / (data.options?.length || 2))),
