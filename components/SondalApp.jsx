@@ -65,7 +65,8 @@ export function SondalApp({ communityPolls: initialPolls = [], editorialPolls = 
       question:   data.question,
       category:   data.category,
       created_at: new Date().toISOString(),
-      profiles:   isLoggedIn ? null : null, // null = Anonim (obsłużone w PollCard)
+      is_anonymous: data.isAnon,
+      profiles:   data.isAnon ? null : { handle: "wac", avatar_letter: "A" }, // null = Anonim
       poll_options: (data.options || []).map((label, i) => ({ id: `opt-${i}`, label, position: i })),
       // Pola pomocnicze dla lokalnego wyświetlania
       totalVotes: 0,
