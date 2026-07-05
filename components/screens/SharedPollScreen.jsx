@@ -1,43 +1,86 @@
 "use client";
 
-// SharedPollScreen — wydzielony z makiety sondal_ekran_glowny.jsx
-// TODO: zastąp mockowe dane prawdziwymi propsami / zapytaniami Supabase
-
-import { useState, useEffect, useRef } from "react";
-import { Search, MessageCircle, Share2, ChevronRight, User, Lock, Eye, Plus, BarChart2 } from "lucide-react";
+// SharedPollScreen — wyświetla pojedynczą sondę do udostępniania
+import { useState } from "react";
+import { MessageCircle, Share2, BarChart2 } from "lucide-react";
 import { theme } from "@/lib/theme";
-import { LogoMark, Tag, VoteButtons, MiniBarChart, EmptyState, SkeletonCard, Toggle } from "@/components/ui";
+import { createClient } from "@/lib/supabase/client";
+import { castVote, getMyVote, getPollResults } from "@/lib/queries";
+import { getAnonSessionId } from "@/lib/anonSession";
 
-// Dane mockowe (inline) — przenieś do propsów lub pobierz z Supabase
-// gdy będziesz podłączać konkretny ekran do bazy danych.
-
-export function SharedPollScreen({ onGoToPortal }) {
-  const [voted, setVoted] = useState(null);
+export function SharedPollScreen({ poll, initialResults, onGoToPortal }) {
+  const [votedOptionId, setVotedOptionId] = useState(null);
+  const [results, setResults] = useState(initialResults || []);
+  const [voting, setVoting] = useState(false);
+  const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  // Mock danych — w realnej implementacji pobierane z bazy po slug z URL
-  const poll = {
-    question: "Czy rondo przy Dworcu Centralnym powinno mieć naziemne przejścia dla pieszych?",
-    tag: "#warszawa",
-    options: ["Tak — ułatwi życie pieszym", "Nie — sparaliżuje ruch aut"],
-    split: [64, 36],
-    totalVotes: 2341,
-    author: "@ania_wawa",
-    avatar: "A",
-    time: "8 min temu",
+  const supabase = createClient();
+
+  const handleVote = async (optionId) => {
+    if (voting || votedOptionId) return;
+    setVoting(true);
+    setError(null);
+
+    try {
+      const anonSession = getAnonSessionId();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      await castVote(supabase, {
+        pollId: poll.id,
+        optionId,
+        userId: user?.id || null,
+        anonSession: user?.id ? null : anonSession,
+      });
+
+      setVotedOptionId(optionId);
+      const res = await getPollResults(supabase, poll.id);
+      setResults(res);
+
+    } catch (err) {
+      if (err.message === "Już zagłosowałeś w tej sondzie") {
+        const myVote = await getMyVote(supabase, {
+          pollId: poll.id,
+          userId: null,
+          anonSession: getAnonSessionId(),
+        });
+        if (myVote) {
+          setVotedOptionId(myVote);
+          const res = await getPollResults(supabase, poll.id);
+          setResults(res);
+        }
+      } else {
+        setError("Błąd głosowania — spróbuj ponownie");
+      }
+    } finally {
+      setVoting(false);
+    }
   };
 
-  const handleCopy = () => {
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopy = async () => {
+    const shareUrl = `https://sondal.top/x/${poll.slug}`;
+    if (navigator.share) {
+      await navigator.share({ url: shareUrl, title: poll.question });
+    } else {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
+
+  const options = poll.poll_options || [];
+  const totalVotes = results.reduce((sum, r) => sum + r.count, 0);
+
+  const author = poll.is_anonymous ? "Anonim" : (poll.profiles?.handle || "Anonim");
+  const avatar = poll.is_anonymous ? "?" : (poll.profiles?.avatar_letter || "?");
+  const time = new Date(poll.created_at).toLocaleDateString("pl-PL");
 
   return (
     <div style={{ background:theme.bg, minHeight:"100dvh", maxWidth:430, margin:"0 auto", display:"flex", flexDirection:"column", fontFamily:"Inter, sans-serif" }}>
 
       {/* Minimal header — no nav, no search, just brand */}
       <div onClick={onGoToPortal} style={{ height:64, padding:"0 16px", borderBottom:`1px solid ${theme.border}`, display:"flex", alignItems:"center", gap:8, cursor:"pointer", flexShrink:0 }}>
-        <LogoMark size={28}/>
+        <div style={{ width:28, height:28, borderRadius:"50%", background:theme.accentDim, border:`1px solid ${theme.borderAccent}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, color:theme.accent, fontWeight:700 }}>S</div>
         <div>
           <div style={{ display:"flex", alignItems:"baseline", gap:2 }}>
             <span style={{ fontFamily:"'Plus Jakarta Sans', sans-serif", fontWeight:800, fontSize:18, color:theme.text, letterSpacing:"-0.5px" }}>sondal</span>
@@ -53,42 +96,56 @@ export function SharedPollScreen({ onGoToPortal }) {
         <div style={{ background:theme.surface, border:`1px solid ${theme.border}`, borderRadius:16, padding:"20px 18px", marginBottom:20 }}>
 
           <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:14 }}>
-            <div style={{ width:30, height:30, borderRadius:"50%", background:theme.indigo, border:`1px solid ${theme.borderAccent}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, color:theme.accent, fontWeight:700, flexShrink:0 }}>{poll.avatar}</div>
+            <div style={{ width:30, height:30, borderRadius:"50%", background:theme.indigo, border:`1px solid ${theme.borderAccent}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, color:theme.accent, fontWeight:700, flexShrink:0 }}>{avatar}</div>
             <div style={{ flex:1 }}>
               <div style={{ display:"flex", gap:6, alignItems:"center" }}>
-                <span style={{ color:theme.text, fontSize:13, fontFamily:"Inter, sans-serif", fontWeight:600 }}>{poll.author}</span>
-                <span style={{ color:theme.textDim, fontSize:11, fontFamily:"Inter, sans-serif" }}>{poll.time}</span>
+                <span style={{ color:theme.text, fontSize:13, fontFamily:"Inter, sans-serif", fontWeight:600 }}>{author}</span>
+                <span style={{ color:theme.textDim, fontSize:11, fontFamily:"Inter, sans-serif" }}>{time}</span>
               </div>
-              <Tag>{poll.tag}</Tag>
+              <span style={{ color:theme.textDim, fontSize:11, fontFamily:"Inter, sans-serif" }}>{poll.category}</span>
             </div>
           </div>
 
           <h1 style={{ color:theme.text, fontFamily:"'Plus Jakarta Sans', sans-serif", fontSize:19, fontWeight:700, lineHeight:1.4, margin:"0 0 18px" }}>{poll.question}</h1>
 
-          {voted === null ? (
+          {error && (
+            <p style={{ color: theme.red, fontSize: 11, margin: "8px 0 0", fontFamily: "Inter, sans-serif" }}>{error}</p>
+          )}
+
+          {!votedOptionId ? (
             <div style={{ display:"flex", flexDirection:"column", gap:9 }}>
-              {poll.options.map((opt,i) => (
-                <button key={i} onClick={() => setVoted(i)}
-                  style={{ background:theme.surfaceHigh, border:`1px solid ${theme.border}`, borderRadius:11, padding:"14px 16px", color:theme.text, fontFamily:"Inter, sans-serif", fontSize:14, textAlign:"left", cursor:"pointer", transition:"border-color 0.15s" }}
+              {options.map((opt) => (
+                <button
+                  key={opt.id}
+                  onClick={() => handleVote(opt.id)}
+                  disabled={voting}
+                  style={{ background:theme.surfaceHigh, border:`1px solid ${theme.border}`, borderRadius:11, padding:"14px 16px", color:theme.text, fontFamily:"Inter, sans-serif", fontSize:14, textAlign:"left", cursor: voting ? "wait" : "pointer", transition:"border-color 0.15s", opacity: voting ? 0.6 : 1 }}
                   onMouseEnter={e=>e.currentTarget.style.borderColor=theme.accent}
                   onMouseLeave={e=>e.currentTarget.style.borderColor=theme.border}
-                >{opt}</button>
+                >{opt.label}</button>
               ))}
             </div>
           ) : (
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-              {poll.options.map((opt,i) => (
-                <div key={i}>
-                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
-                    <span style={{ color: i===voted ? theme.accentBright : theme.textMuted, fontSize:13, fontFamily:"Inter, sans-serif", fontWeight: i===voted ? 600 : 400 }}>{opt} {i===voted && "✓"}</span>
-                    <span style={{ color:theme.textMuted, fontSize:13, fontFamily:"Inter, sans-serif", fontWeight:700 }}>{poll.split[i]}%</span>
+              {options.map((opt) => {
+                const result = results.find(r => r.option_id === opt.id);
+                const count = result?.count || 0;
+                const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+                const isVoted = votedOptionId === opt.id;
+
+                return (
+                  <div key={opt.id}>
+                    <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
+                      <span style={{ color: isVoted ? theme.accentBright : theme.textMuted, fontSize:13, fontFamily:"Inter, sans-serif", fontWeight: isVoted ? 600 : 400 }}>{opt.label} {isVoted && "✓"}</span>
+                      <span style={{ color:theme.textMuted, fontSize:13, fontFamily:"Inter, sans-serif", fontWeight:700 }}>{percentage}%</span>
+                    </div>
+                    <div style={{ height:8, background:theme.border, borderRadius:4, overflow:"hidden" }}>
+                      <div style={{ width:`${percentage}%`, height:"100%", background: isVoted ? theme.accent : theme.textDim, borderRadius:4, transition:"width 0.6s ease" }}/>
+                    </div>
                   </div>
-                  <div style={{ height:8, background:theme.border, borderRadius:4, overflow:"hidden" }}>
-                    <div style={{ width:`${poll.split[i]}%`, height:"100%", background: i===voted ? theme.accent : theme.textDim, borderRadius:4, transition:"width 0.6s ease" }}/>
-                  </div>
-                </div>
-              ))}
-              <p style={{ color:theme.textDim, fontSize:12, fontFamily:"Inter, sans-serif", marginTop:6 }}>{poll.totalVotes.toLocaleString()} głosów łącznie</p>
+                );
+              })}
+              <p style={{ color:theme.textDim, fontSize:12, fontFamily:"Inter, sans-serif", marginTop:6 }}>{totalVotes.toLocaleString()} głosów łącznie</p>
             </div>
           )}
 

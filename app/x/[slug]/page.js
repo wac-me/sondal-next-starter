@@ -1,10 +1,8 @@
 // Dynamiczny route dla sondal.top/x/[slug] — czyli udostępnianych linków.
-// To odpowiednik ekranu SharedPollScreen z makiety, ale zasilany prawdziwymi
-// danymi z bazy zamiast mocków.
-
 import { createClient } from '@/lib/supabase/server';
 import { getPollBySlug, getPollResults } from '@/lib/queries';
 import { notFound } from 'next/navigation';
+import { SharedPollScreen } from '@/components/screens/SharedPollScreen';
 
 export default async function SharedPollPage({ params }) {
   const { slug } = await params;
@@ -20,20 +18,7 @@ export default async function SharedPollPage({ params }) {
   const results = await getPollResults(supabase, poll.id);
 
   return (
-    <main>
-      {/*
-        Tu wklej komponent SharedPollScreen z makiety, przekazując:
-        <SharedPollScreen poll={poll} results={results} />
-
-        Pamiętaj: SharedPollScreen używa useState do głosowania,
-        więc musi być komponentem klienckim ("use client" na górze).
-        Ta strona (page.js) zostaje Server Component i tylko pobiera
-        dane — to dobry pattern: serwer pobiera, klient interaguje.
-      */}
-      <pre style={{ color: '#fff', padding: 20 }}>
-        {JSON.stringify({ poll, results }, null, 2)}
-      </pre>
-    </main>
+    <SharedPollScreen poll={poll} initialResults={results} onGoToPortal={() => window.location.href = '/'} />
   );
 }
 
