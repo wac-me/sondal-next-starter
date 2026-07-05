@@ -18,7 +18,7 @@ export default async function SharedPollPage({ params }) {
   const results = await getPollResults(supabase, poll.id);
 
   return (
-    <SharedPollScreen poll={poll} initialResults={results} onGoToPortal={() => window.location.href = '/'} />
+    <SharedPollScreen poll={poll} initialResults={results} />
   );
 }
 
