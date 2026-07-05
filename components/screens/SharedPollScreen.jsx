@@ -1,7 +1,7 @@
 "use client";
 
 // SharedPollScreen — wyświetla pojedynczą sondę do udostępniania
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MessageCircle, Share2, BarChart2 } from "lucide-react";
 import { theme } from "@/lib/theme";
 import { createClient } from "@/lib/supabase/client";
@@ -16,6 +16,30 @@ export function SharedPollScreen({ poll, initialResults, onGoToPortal }) {
   const [copied, setCopied] = useState(false);
 
   const supabase = createClient();
+
+  // Sprawdź czy użytkownik już zagłosował przy ładowaniu
+  useEffect(() => {
+    const checkExistingVote = async () => {
+      try {
+        const anonSession = getAnonSessionId();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        const myVote = await getMyVote(supabase, {
+          pollId: poll.id,
+          userId: user?.id || null,
+          anonSession: user?.id ? null : anonSession,
+        });
+
+        if (myVote) {
+          setVotedOptionId(myVote);
+        }
+      } catch (err) {
+        console.error("Error checking existing vote:", err);
+      }
+    };
+
+    checkExistingVote();
+  }, [poll.id]);
 
   const handleVote = async (optionId) => {
     if (voting || votedOptionId) return;
@@ -69,7 +93,7 @@ export function SharedPollScreen({ poll, initialResults, onGoToPortal }) {
   };
 
   const options = poll.poll_options || [];
-  const totalVotes = results.reduce((sum, r) => sum + r.count, 0);
+  const totalVotes = results.reduce((sum, r) => sum + (r.vote_count || 0), 0);
 
   const author = poll.is_anonymous ? "Anonim" : (poll.profiles?.handle || "Anonim");
   const avatar = poll.is_anonymous ? "?" : (poll.profiles?.avatar_letter || "?");
@@ -129,7 +153,7 @@ export function SharedPollScreen({ poll, initialResults, onGoToPortal }) {
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
               {options.map((opt) => {
                 const result = results.find(r => r.option_id === opt.id);
-                const count = result?.count || 0;
+                const count = result?.vote_count || 0;
                 const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
                 const isVoted = votedOptionId === opt.id;
 
