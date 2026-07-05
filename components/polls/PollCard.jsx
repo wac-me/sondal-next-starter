@@ -205,7 +205,15 @@ export function PollCard({ poll }) {
           <MessageCircle size={13} strokeWidth={1.8} /> Dyskusja
         </span>
         <span
-          onClick={() => navigator.share?.({ url: `https://sondal.top/x/${poll.slug}`, title: poll.question })}
+          onClick={async () => {
+            const shareUrl = `https://sondal.top/x/${poll.slug}`;
+            if (navigator.share) {
+              await navigator.share({ url: shareUrl, title: poll.question });
+            } else {
+              await navigator.clipboard.writeText(shareUrl);
+              alert("Link skopiowany do schowka!");
+            }
+          }}
           style={{ color: theme.textDim, fontSize: 12, fontFamily: "Inter, sans-serif", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
           <Share2 size={13} strokeWidth={1.8} /> Udostępnij
         </span>

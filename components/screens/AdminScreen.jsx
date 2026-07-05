@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Trash2, Eye, EyeOff, ArrowLeft, BarChart2, Users, MessageSquare } from "lucide-react";
+import { Trash2, Eye, EyeOff, ArrowLeft, BarChart2, Users, MessageSquare, Share2 } from "lucide-react";
 import { theme } from "@/lib/theme";
 import { createClient } from "@/lib/supabase/client";
 import { getAllPolls, deletePoll, togglePollVisibility } from "@/lib/queries";
@@ -50,7 +50,7 @@ export function AdminScreen({ onGoHome }) {
     try {
       setActionLoading(pollId);
       await togglePollVisibility(supabase, pollId, !currentVisibility);
-      setPolls(prev => prev.map(p => 
+      setPolls(prev => prev.map(p =>
         p.id === pollId ? { ...p, is_public: !currentVisibility } : p
       ));
     } catch (err) {
@@ -58,6 +58,16 @@ export function AdminScreen({ onGoHome }) {
       console.error(err);
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  const handleShare = async (slug) => {
+    const shareUrl = `https://sondal.top/x/${slug}`;
+    if (navigator.share) {
+      await navigator.share({ url: shareUrl, title: "Sonda z sondal.top" });
+    } else {
+      await navigator.clipboard.writeText(shareUrl);
+      alert("Link skopiowany do schowka!");
     }
   };
 
@@ -156,12 +166,28 @@ export function AdminScreen({ onGoHome }) {
                 </div>
                 <div style={{ display: "flex", gap: 6 }}>
                   <button
+                    onClick={() => handleShare(poll.slug)}
+                    style={{
+                      background: theme.surfaceHigh,
+                      border: `1px solid ${theme.border}`,
+                      borderRadius: 8,
+                      padding: 8,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center"
+                    }}
+                    title="Udostępnij"
+                  >
+                    <Share2 size={16} color={theme.accent} strokeWidth={1.8} />
+                  </button>
+                  <button
                     onClick={() => handleToggleVisibility(poll.id, poll.is_public)}
                     disabled={actionLoading === poll.id}
-                    style={{ 
-                      background: poll.is_public ? theme.greenDim : theme.surfaceHigh, 
-                      border: `1px solid ${poll.is_public ? "rgba(34,197,94,0.3)" : theme.border}`, 
-                      borderRadius: 8, 
+                    style={{
+                      background: poll.is_public ? theme.greenDim : theme.surfaceHigh,
+                      border: `1px solid ${poll.is_public ? "rgba(34,197,94,0.3)" : theme.border}`,
+                      borderRadius: 8,
                       padding: 8,
                       cursor: actionLoading === poll.id ? "wait" : "pointer",
                       display: "flex",
@@ -175,10 +201,10 @@ export function AdminScreen({ onGoHome }) {
                   <button
                     onClick={() => handleDelete(poll.id)}
                     disabled={actionLoading === poll.id}
-                    style={{ 
-                      background: theme.redDim, 
-                      border: `1px solid ${theme.redBorder}`, 
-                      borderRadius: 8, 
+                    style={{
+                      background: theme.redDim,
+                      border: `1px solid ${theme.redBorder}`,
+                      borderRadius: 8,
                       padding: 8,
                       cursor: actionLoading === poll.id ? "wait" : "pointer",
                       display: "flex",
