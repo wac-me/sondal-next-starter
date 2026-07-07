@@ -1,30 +1,40 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Trash2, Eye, EyeOff, ArrowLeft, BarChart2, Users, MessageSquare, Share2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Trash2, Eye, EyeOff, ArrowLeft, BarChart2, Share2 } from "lucide-react";
 import { theme } from "@/lib/theme";
-import { createClient } from "@/lib/supabase/client";
-import { getAllPolls, deletePoll, togglePollVisibility } from "@/lib/queries";
 
 export function AdminScreen({ onGoHome }) {
+  const router = useRouter();
   const [polls, setPolls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
   const [error, setError] = useState(null);
 
-  const supabase = createClient();
-
   useEffect(() => {
     loadPolls();
   }, []);
 
+  const fetchAdmin = async (url, options) => {
+    const response = await fetch(url, { cache: "no-store", ...options });
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      throw new Error(data?.error || "Admin API request failed");
+    }
+
+    return data;
+  };
+
   const loadPolls = async () => {
     try {
       setLoading(true);
-      const data = await getAllPolls(supabase);
+      setError(null);
+      const data = await fetchAdmin("/api/admin/polls");
       setPolls(data);
     } catch (err) {
-      setError("Nie udało się załadować sond");
+      setError(`Nie udało się załadować sond: ${err.message}`);
       console.error(err);
     } finally {
       setLoading(false);
@@ -36,10 +46,11 @@ export function AdminScreen({ onGoHome }) {
 
     try {
       setActionLoading(pollId);
-      await deletePoll(supabase, pollId);
+      setError(null);
+      await fetchAdmin(`/api/admin/polls/${pollId}`, { method: "DELETE" });
       setPolls(prev => prev.filter(p => p.id !== pollId));
     } catch (err) {
-      setError("Nie udało się usunąć sondy");
+      setError(`Nie udało się usunąć sondy: ${err.message}`);
       console.error(err);
     } finally {
       setActionLoading(null);
@@ -49,16 +60,30 @@ export function AdminScreen({ onGoHome }) {
   const handleToggleVisibility = async (pollId, currentVisibility) => {
     try {
       setActionLoading(pollId);
-      await togglePollVisibility(supabase, pollId, !currentVisibility);
+      setError(null);
+      await fetchAdmin(`/api/admin/polls/${pollId}/visibility`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isPublic: !currentVisibility }),
+      });
       setPolls(prev => prev.map(p =>
         p.id === pollId ? { ...p, is_public: !currentVisibility } : p
       ));
     } catch (err) {
-      setError("Nie udało się zmienić widoczności");
+      setError(`Nie udało się zmienić widoczności: ${err.message}`);
       console.error(err);
     } finally {
       setActionLoading(null);
     }
+  };
+
+  const handleBack = () => {
+    if (onGoHome) {
+      onGoHome();
+      return;
+    }
+
+    router.push("/");
   };
 
   const handleShare = async (slug) => {
@@ -93,7 +118,7 @@ export function AdminScreen({ onGoHome }) {
         backdropFilter: "blur(14px)"
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <button onClick={onGoHome} style={{ background: "none", border: "none", cursor: "pointer", padding: 8 }}>
+          <button onClick={handleBack} style={{ background: "none", border: "none", cursor: "pointer", padding: 8 }}>
             <ArrowLeft size={20} color={theme.textMuted} strokeWidth={2} />
           </button>
           <div>
