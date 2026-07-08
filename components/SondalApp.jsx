@@ -94,6 +94,153 @@ export function SondalApp({ communityPolls: initialPolls = [], editorialPolls = 
   };
 
   // ── Trending detail ──────────────────────────────────────
+  const trendingPollDetails = {
+    1: {
+      id: 1,
+      tag: "#polityka",
+      avatar: "M",
+      user: "Marta",
+      time: "2h temu",
+      question: "Czy warto wprowadzić 4-dniowy tydzień pracy?",
+      options: ["Tak", "Nie", "Nie wiem"],
+      split: [55, 35, 10],
+      totalVotes: 1240,
+      comments: []
+    },
+    2: {
+      id: 2,
+      tag: "#technologia",
+      avatar: "K",
+      user: "Krzysztof",
+      time: "3h temu",
+      question: "Czy AI zastąpi programistów?",
+      options: ["Tak, całkowicie", "Częściowo", "Nie, nigdy"],
+      split: [40, 45, 15],
+      totalVotes: 890,
+      comments: []
+    },
+    3: {
+      id: 3,
+      tag: "#społeczeństwo",
+      avatar: "A",
+      user: "Anna",
+      time: "5h temu",
+      question: "Czy należy znieść wizy do UE?",
+      options: ["Tak", "Nie", "Tylko dla niektórych"],
+      split: [60, 30, 10],
+      totalVotes: 756,
+      comments: []
+    },
+    4: {
+      id: 4,
+      tag: "#gospodarka",
+      avatar: "P",
+      user: "Piotr",
+      time: "1d temu",
+      question: "Czy podnieść minimalną wynagrodzenie?",
+      options: ["Tak, znacząco", "Tak, nieznacznie", "Nie"],
+      split: [50, 35, 15],
+      totalVotes: 543,
+      comments: []
+    },
+    5: {
+      id: 5,
+      tag: "#zdrowie",
+      avatar: "E",
+      user: "Ewa",
+      time: "1d temu",
+      question: "Czy szczepienia powinny być obowiązkowe?",
+      options: ["Tak, wszystkie", "Tylko niektóre", "Nie"],
+      split: [35, 40, 25],
+      totalVotes: 432,
+      comments: []
+    },
+    6: {
+      id: 6,
+      tag: "#edukacja",
+      avatar: "T",
+      user: "Tomasz",
+      time: "2d temu",
+      question: "Czy usunąć lektury ze szkół?",
+      options: ["Tak, wszystkie", "Częściowo", "Nie"],
+      split: [25, 30, 45],
+      totalVotes: 321,
+      comments: []
+    },
+    7: {
+      id: 7,
+      tag: "#środowisko",
+      avatar: "M",
+      user: "Monika",
+      time: "2d temu",
+      question: "Czy zakazać plastikowych torebek?",
+      options: ["Tak", "Nie", "Opłata"],
+      split: [55, 25, 20],
+      totalVotes: 287,
+      comments: []
+    },
+    8: {
+      id: 8,
+      tag: "#sport",
+      avatar: "R",
+      user: "Robert",
+      time: "3d temu",
+      question: "Czy Polska zorganizuje olimpiadę?",
+      options: ["Tak", "Nie", "Może"],
+      split: [30, 50, 20],
+      totalVotes: 198,
+      comments: []
+    },
+    9: {
+      id: 9,
+      tag: "#kultura",
+      avatar: "J",
+      user: "Joanna",
+      time: "4d temu",
+      question: "Czy finansować filmy narodowe?",
+      options: ["Tak", "Nie", "Częściowo"],
+      split: [40, 35, 25],
+      totalVotes: 156,
+      comments: []
+    },
+    10: {
+      id: 10,
+      tag: "#transport",
+      avatar: "S",
+      user: "Stanisław",
+      time: "5d temu",
+      question: "Czy darmowa komunikacja miejska?",
+      options: ["Tak", "Nie", "Dla seniorów"],
+      split: [45, 30, 25],
+      totalVotes: 134,
+      comments: []
+    },
+    11: {
+      id: 11,
+      tag: "#energetyka",
+      avatar: "W",
+      user: "Wojciech",
+      time: "6d temu",
+      question: "Czy zainwestować w atom?",
+      options: ["Tak", "Nie", "OZE"],
+      split: [50, 25, 25],
+      totalVotes: 112,
+      comments: []
+    },
+    12: {
+      id: 12,
+      tag: "#media",
+      avatar: "Z",
+      user: "Zuzanna",
+      time: "1w temu",
+      question: "Czy regulować media społecznościowe?",
+      options: ["Tak", "Nie", "Samoregulacja"],
+      split: [35, 40, 25],
+      totalVotes: 98,
+      comments: []
+    }
+  };
+
   const openTrendingDetail = (id) => {
     setTrendingDetailId(id);
     setTrendingDetailAnim("entering");
@@ -177,9 +324,9 @@ export function SondalApp({ communityPolls: initialPolls = [], editorialPolls = 
             <TrendingNowScreen onBack={() => setShowTrending(false)} onGoHome={goHome} onPollOpen={openTrendingDetail} />
           </div>
           <BottomNav active={activeNav} setActive={(id) => { setShowTrending(false); handleNavChange(id); }} />
-          {trendingDetailId !== null && (
+          {trendingDetailId !== null && trendingPollDetails[trendingDetailId] && (
             <div style={{ position: "absolute", inset: 0, zIndex: 50, transform: trendingDetailAnim === "open" ? "translateX(0)" : "translateX(100%)", transition: (trendingDetailAnim === "open" || trendingDetailAnim === "closing") ? "transform 0.38s cubic-bezier(.22,.68,0,1.1)" : "none" }}>
-              <SondaDetail pollId={trendingDetailId} onClose={closeTrendingDetail} onGoHome={goHome} />
+              <SondaDetail poll={trendingPollDetails[trendingDetailId]} onClose={closeTrendingDetail} onGoHome={goHome} />
             </div>
           )}
         </div>

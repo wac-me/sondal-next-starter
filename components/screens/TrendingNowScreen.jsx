@@ -10,6 +10,20 @@ import { LogoMark, Tag, VoteButtons, MiniBarChart, EmptyState, SkeletonCard, Tog
 
 // Dane mockowe (inline) — przenieś do propsów lub pobierz z Supabase
 // gdy będziesz podłączać konkretny ekran do bazy danych.
+const trendingPolls = [
+  { id: 1, tag: "#polityka", question: "Czy warto wprowadzić 4-dniowy tydzień pracy?", votes: 1240 },
+  { id: 2, tag: "#technologia", question: "Czy AI zastąpi programistów?", votes: 890 },
+  { id: 3, tag: "#społeczeństwo", question: "Czy należy znieść wizy do UE?", votes: 756 },
+  { id: 4, tag: "#gospodarka", question: "Czy podnieść minimalną wynagrodzenie?", votes: 543 },
+  { id: 5, tag: "#zdrowie", question: "Czy szczepienia powinny być obowiązkowe?", votes: 432 },
+  { id: 6, tag: "#edukacja", question: "Czy usunąć lektury ze szkół?", votes: 321 },
+  { id: 7, tag: "#środowisko", question: "Czy zakazać plastikowych torebek?", votes: 287 },
+  { id: 8, tag: "#sport", question: "Czy Polska zorganizuje olimpiadę?", votes: 198 },
+  { id: 9, tag: "#kultura", question: "Czy finansować filmy narodowe?", votes: 156 },
+  { id: 10, tag: "#transport", question: "Czy darmowa komunikacja miejska?", votes: 134 },
+  { id: 11, tag: "#energetyka", question: "Czy zainwestować w atom?", votes: 112 },
+  { id: 12, tag: "#media", question: "Czy regulować media społecznościowe?", votes: 98 },
+];
 
 export function TrendingNowScreen({ onBack, onGoHome, onPollOpen, onNavChange, activeNav }) {
   return (
