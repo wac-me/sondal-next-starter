@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { MessageCircle, Share2, BarChart2 } from "lucide-react";
 import { theme } from "@/lib/theme";
 import { createClient } from "@/lib/supabase/client";
-import { castVote, getMyVote, getPollResults } from "@/lib/queries";
+import { addComment, castVote, getComments, getMyVote, getPollResults } from "@/lib/queries";
 import { getAnonSessionId } from "@/lib/anonSession";
 
 export function SharedPollScreen({ poll, initialResults, onGoToPortal }) {
@@ -14,6 +14,10 @@ export function SharedPollScreen({ poll, initialResults, onGoToPortal }) {
   const [voting, setVoting] = useState(false);
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [commentText, setCommentText] = useState("");
+  const [commentLoading, setCommentLoading] = useState(false);
+  const [commentError, setCommentError] = useState(null);
 
   const supabase = createClient();
   const goToPortal = onGoToPortal || (() => {
@@ -42,6 +46,19 @@ export function SharedPollScreen({ poll, initialResults, onGoToPortal }) {
     };
 
     checkExistingVote();
+  }, [poll.id]);
+
+  useEffect(() => {
+    const loadComments = async () => {
+      try {
+        const data = await getComments(supabase, poll.id);
+        setComments(data || []);
+      } catch (err) {
+        console.error("Error loading comments:", err);
+      }
+    };
+
+    loadComments();
   }, [poll.id]);
 
   const handleVote = async (optionId) => {
@@ -92,6 +109,33 @@ export function SharedPollScreen({ poll, initialResults, onGoToPortal }) {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleAddComment = async () => {
+    const content = commentText.trim();
+    if (!content || commentLoading || !votedOptionId) return;
+
+    setCommentLoading(true);
+    setCommentError(null);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      await addComment(supabase, {
+        pollId: poll.id,
+        authorId: user?.id || null,
+        content,
+        optionId: votedOptionId,
+      });
+
+      setCommentText("");
+      const data = await getComments(supabase, poll.id);
+      setComments(data || []);
+    } catch (err) {
+      console.error("Error adding comment:", err);
+      setCommentError("Nie udało się dodać komentarza. Spróbuj po zalogowaniu.");
+    } finally {
+      setCommentLoading(false);
     }
   };
 
@@ -182,9 +226,59 @@ export function SharedPollScreen({ poll, initialResults, onGoToPortal }) {
               {copied ? "✓ Skopiowano" : <><Share2 size={14} strokeWidth={1.8}/> Udostępnij</>}
             </button>
             <button style={{ flex:1, background:theme.bg, border:`1px solid ${theme.border}`, borderRadius:9, padding:"10px", color:theme.textMuted, fontFamily:"Inter, sans-serif", fontSize:12, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
-              <MessageCircle size={14} strokeWidth={1.8}/> Komentarze
+              <MessageCircle size={14} strokeWidth={1.8}/> {comments.length} komentarzy
             </button>
           </div>
+        </div>
+
+        <div style={{ background:theme.surface, border:`1px solid ${theme.border}`, borderRadius:14, padding:"16px", marginBottom:20 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
+            <div style={{ width:3, height:14, background:theme.accent, borderRadius:2 }}/>
+            <p style={{ color:theme.text, fontFamily:"'Plus Jakarta Sans', sans-serif", fontSize:15, fontWeight:700, margin:0 }}>Dyskusja</p>
+            <span style={{ color:theme.textDim, fontFamily:"Inter, sans-serif", fontSize:12 }}>({comments.length})</span>
+          </div>
+
+          {votedOptionId ? (
+            <div style={{ marginBottom:14 }}>
+              <textarea
+                value={commentText}
+                onChange={e => setCommentText(e.target.value)}
+                placeholder="Dodaj komentarz do swojego głosu..."
+                rows={3}
+                style={{ width:"100%", background:theme.bg, border:`1px solid ${theme.border}`, borderRadius:10, padding:"12px", color:theme.text, fontFamily:"Inter, sans-serif", fontSize:13, lineHeight:1.45, resize:"none", outline:"none", boxSizing:"border-box" }}
+              />
+              {commentError && (
+                <p style={{ color:theme.red, fontFamily:"Inter, sans-serif", fontSize:12, margin:"8px 0 0" }}>{commentError}</p>
+              )}
+              <button
+                onClick={handleAddComment}
+                disabled={!commentText.trim() || commentLoading}
+                style={{ width:"100%", background:commentText.trim() ? theme.accent : theme.surfaceHigh, color:commentText.trim() ? "#fff" : theme.textDim, border:"none", borderRadius:10, padding:"11px", marginTop:9, fontFamily:"'Plus Jakarta Sans', sans-serif", fontSize:13, fontWeight:800, cursor:commentText.trim() && !commentLoading ? "pointer" : "not-allowed" }}
+              >
+                {commentLoading ? "Dodawanie..." : "Dodaj komentarz"}
+              </button>
+            </div>
+          ) : (
+            <p style={{ color:theme.textMuted, fontFamily:"Inter, sans-serif", fontSize:13, lineHeight:1.5, margin:"0 0 14px" }}>Zagłosuj, żeby dołączyć komentarz do dyskusji.</p>
+          )}
+
+          {comments.length === 0 ? (
+            <p style={{ color:theme.textDim, fontFamily:"Inter, sans-serif", fontSize:12, margin:0 }}>Jeszcze nikt nie skomentował tej sondy.</p>
+          ) : (
+            <div style={{ display:"flex", flexDirection:"column", gap:9 }}>
+              {comments.slice(0, 4).map(comment => (
+                <div key={comment.id} style={{ background:theme.bg, border:`1px solid ${theme.border}`, borderRadius:10, padding:"11px" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:7 }}>
+                    <div style={{ width:24, height:24, borderRadius:"50%", background:theme.indigo, border:`1px solid ${theme.borderAccent}`, display:"flex", alignItems:"center", justifyContent:"center", color:theme.accentBright, fontSize:11, fontWeight:800, flexShrink:0 }}>
+                      {comment.profiles?.avatar_letter || "?"}
+                    </div>
+                    <span style={{ color:theme.text, fontFamily:"Inter, sans-serif", fontSize:12, fontWeight:700 }}>{comment.profiles?.handle || "Anonim"}</span>
+                  </div>
+                  <p style={{ color:theme.textMuted, fontFamily:"Inter, sans-serif", fontSize:12, lineHeight:1.5, margin:0 }}>{comment.content}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* CTA — odkryj resztę portalu */}
@@ -204,4 +298,3 @@ export function SharedPollScreen({ poll, initialResults, onGoToPortal }) {
     </div>
   );
 }
-

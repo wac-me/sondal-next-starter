@@ -115,7 +115,13 @@ export function DiscoverScreen({ onGoToCreate, onShowTrending, onGoHome, communi
             />
           ) : (
             <>
-              {communityPolls.map(poll => <PollCard key={poll.id} poll={poll}/>)}
+              {communityPolls.map(poll => (
+                <PollCard 
+                  key={poll.id} 
+                  poll={poll}
+                  onDiscussClick={() => window.location.href = `/x/${poll.slug}`}
+                />
+              ))}
             </>
           )}
           <div style={{ height:20 }}/>

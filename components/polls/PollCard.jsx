@@ -39,7 +39,7 @@ function ResultBars({ options, results, votedOptionId }) {
 }
 
 // ─── PollCard ─────────────────────────────────────────────
-export function PollCard({ poll }) {
+export function PollCard({ poll, onDiscussClick }) {
   const [votedOptionId, setVotedOptionId] = useState(null);
   const [results,       setResults]       = useState([]);
   const [loading,       setLoading]       = useState(true);
@@ -201,7 +201,7 @@ export function PollCard({ poll }) {
 
       {/* Footer */}
       <div style={{ display: "flex", gap: 16, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${theme.border}` }}>
-        <span style={{ color: theme.textDim, fontSize: 12, fontFamily: "Inter, sans-serif", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+        <span onClick={onDiscussClick} style={{ color: theme.textDim, fontSize: 12, fontFamily: "Inter, sans-serif", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
           <MessageCircle size={13} strokeWidth={1.8} /> Dyskusja
         </span>
         <span
