@@ -11,7 +11,7 @@ import { LogoMark, Tag, VoteButtons, MiniBarChart, EmptyState, SkeletonCard, Tog
 // Dane mockowe (inline) — przenieś do propsów lub pobierz z Supabase
 // gdy będziesz podłączać konkretny ekran do bazy danych.
 
-export function SondaDetail({ poll, onClose }) {
+export function SondaDetail({ poll, onClose, onGoHome }) {
   const [voted, setVoted] = useState(null);
   const [activeTab, setActiveTab] = useState("all"); // "all"|"0"|"1"|"2"
 
@@ -24,8 +24,8 @@ export function SondaDetail({ poll, onClose }) {
 
       {/* Header — logo left, share + back right */}
       <div style={{ height:64, padding:"0 16px", borderBottom:`1px solid ${theme.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0, background:`${theme.bg}F4`, backdropFilter:"blur(14px)" }}>
-        {/* Logo — click to close */}
-        <div onClick={onClose} style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
+        {/* Logo — click to home */}
+        <div onClick={onGoHome || onClose} style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
           <LogoMark size={28}/>
           <div>
             <div style={{ display:"flex", alignItems:"baseline", gap:2 }}>
@@ -149,5 +149,4 @@ export function SondaDetail({ poll, onClose }) {
     </div>
   );
 }
-
 

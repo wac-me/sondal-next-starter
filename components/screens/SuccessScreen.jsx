@@ -12,13 +12,13 @@ import { LogoMark, Tag, VoteButtons, MiniBarChart, EmptyState, SkeletonCard, Tog
 // Dane mockowe (inline) — przenieś do propsów lub pobierz z Supabase
 // gdy będziesz podłączać konkretny ekran do bazy danych.
 
-export function SuccessScreen({ pollData, onReset, onGoToDiscover, onPreviewShared, onPreviewEmbed }) {
-  const slug = pollData?.slug || `x/${Math.random().toString(36).slice(2, 7)}`;
-  const link = `sondal.top/${slug}`;
-  const iframe = `<iframe src="https://sondal.top/${slug}/embed" width="100%" height="320" frameborder="0"></iframe>`;
+export function SuccessScreen({ pollData, onReset, onGoToDiscover, onGoHome, onPreviewShared, onPreviewEmbed }) {
+  const slug = (pollData?.slug || Math.random().toString(36).slice(2, 7)).replace(/^x\//, "");
+  const link = `sondal.top/x/${slug}`;
+  const iframe = `<iframe src="https://sondal.top/x/${slug}/embed" width="100%" height="320" frameborder="0"></iframe>`;
   return (
     <div style={{ flex:1, display:"flex", flexDirection:"column", minHeight:0, overflow:"hidden" }}>
-      <StickyHeader nowActive={false}/>
+      <StickyHeader nowActive={false} onGoHome={onGoHome}/>
       <div style={{ flex:1, overflowY:"auto", padding:"24px 16px 0", WebkitOverflowScrolling:"touch", minHeight:0 }}>
         <div style={{ textAlign:"center", marginBottom:24 }}>
           <div style={{ width:60, height:60, borderRadius:"50%", background:theme.accentDim, border:`2px solid ${theme.borderAccent}`, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 12px", fontSize:26 }}>⚡</div>
@@ -64,5 +64,3 @@ export function SuccessScreen({ pollData, onReset, onGoToDiscover, onPreviewShar
     </div>
   );
 }
-
-

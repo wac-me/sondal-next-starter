@@ -64,7 +64,7 @@ export function LoginScreen({ onGoHome, onLoggedIn }) {
 
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 64, height: 64, borderRadius: 20, background: theme.accentDim, border: `1px solid ${theme.borderAccent}`, marginBottom: 16 }}>
+          <div onClick={onGoHome} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 64, height: 64, borderRadius: 20, background: theme.accentDim, border: `1px solid ${theme.borderAccent}`, marginBottom: 16, cursor: onGoHome ? "pointer" : "default" }}>
             <LogoMark size={44} />
           </div>
           <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: 22, color: theme.text, margin: "0 0 6px" }}>

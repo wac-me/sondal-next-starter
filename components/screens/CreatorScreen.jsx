@@ -7,7 +7,7 @@ import { LogoMark, Toggle } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
 import { createPoll } from "@/lib/queries";
 
-export function CreatorScreen({ onSuccess, onClose }) {
+export function CreatorScreen({ onSuccess, onClose, onGoHome }) {
   const [question, setQuestion] = useState("");
   const [options, setOptions]   = useState(["", ""]);
   const [isPublic, setIsPublic] = useState(true);
@@ -48,7 +48,7 @@ export function CreatorScreen({ onSuccess, onClose }) {
         isPublic,
         isAnon,
         category,
-        slug: poll.slug,  // np. "x/abc123"
+        slug: poll.slug,  // np. "abc123"
         pollId: poll.id,
       });
 
@@ -63,7 +63,7 @@ export function CreatorScreen({ onSuccess, onClose }) {
     <>
       {/* Header */}
       <div style={{ height: 64, padding: "0 16px", borderBottom: `1px solid ${theme.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, background: `${theme.bg}F4`, backdropFilter: "blur(14px)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div onClick={onGoHome} style={{ display: "flex", alignItems: "center", gap: 8, cursor: onGoHome ? "pointer" : "default" }}>
           <LogoMark size={28} />
           <div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 2 }}>

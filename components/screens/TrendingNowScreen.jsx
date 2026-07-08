@@ -11,11 +11,11 @@ import { LogoMark, Tag, VoteButtons, MiniBarChart, EmptyState, SkeletonCard, Tog
 // Dane mockowe (inline) — przenieś do propsów lub pobierz z Supabase
 // gdy będziesz podłączać konkretny ekran do bazy danych.
 
-export function TrendingNowScreen({ onBack, onPollOpen, onNavChange, activeNav }) {
+export function TrendingNowScreen({ onBack, onGoHome, onPollOpen, onNavChange, activeNav }) {
   return (
     <div style={{ flex:1, display:"flex", flexDirection:"column", background:theme.bg, minHeight:0, overflow:"hidden" }}>
       <div style={{ height:64, padding:"0 16px", borderBottom:`1px solid ${theme.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0, background:`${theme.bg}F4`, backdropFilter:"blur(14px)" }}>
-        <div onClick={onBack} style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
+        <div onClick={onGoHome || onBack} style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
           <LogoMark size={28}/>
           <div>
             <div style={{ display:"flex", alignItems:"baseline", gap:2 }}>
@@ -61,5 +61,4 @@ export function TrendingNowScreen({ onBack, onPollOpen, onNavChange, activeNav }
     </div>
   );
 }
-
 

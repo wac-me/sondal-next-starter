@@ -71,7 +71,7 @@ function TrendingSection({ onPollOpen, onShowAll }) {
   );
 }
 
-export function DiscoverScreen({ onGoToCreate, onShowTrending, communityPolls = [] }) {
+export function DiscoverScreen({ onGoToCreate, onShowTrending, onGoHome, communityPolls = [] }) {
   const [activeCat, setActiveCat] = useState("#Wszystkie");
   const [detailId,  setDetailId]  = useState(null);
   const [detailAnim, setDetailAnim] = useState("closed");
@@ -89,7 +89,7 @@ export function DiscoverScreen({ onGoToCreate, onShowTrending, communityPolls = 
 
   return (
     <div style={{ flex:1, display:"flex", flexDirection:"column", position:"relative", overflow:"hidden" }}>
-      <StickyHeader nowActive={true} onCreateClick={onGoToCreate} onShowTrending={onShowTrending} onGoHome={() => { setDetailId(null); }}/>
+      <StickyHeader nowActive={true} onCreateClick={onGoToCreate} onShowTrending={onShowTrending} onGoHome={() => { setDetailId(null); onGoHome?.(); }}/>
       <div data-scroll-feed style={{ flex:1, overflowY:"auto", position:"relative", paddingTop:64, WebkitOverflowScrolling:"touch", minHeight:0 }}>
         <TickerBar/>
         <HeroSlider onCreateClick={onGoToCreate}/>
@@ -131,11 +131,10 @@ export function DiscoverScreen({ onGoToCreate, onShowTrending, communityPolls = 
             ? "transform 0.38s cubic-bezier(.22,.68,0,1.1)"
             : "none",
         }}>
-          <SondaDetail poll={trendingPollDetails[detailId]} onClose={closeDetail}/>
+          <SondaDetail poll={trendingPollDetails[detailId]} onClose={closeDetail} onGoHome={() => { setDetailId(null); onGoHome?.(); }}/>
         </div>
       )}
     </div>
   );
 }
-
 

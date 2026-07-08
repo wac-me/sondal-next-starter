@@ -16,6 +16,9 @@ export function SharedPollScreen({ poll, initialResults, onGoToPortal }) {
   const [copied, setCopied] = useState(false);
 
   const supabase = createClient();
+  const goToPortal = onGoToPortal || (() => {
+    window.location.href = "/";
+  });
 
   // Sprawdź czy użytkownik już zagłosował przy ładowaniu
   useEffect(() => {
@@ -103,7 +106,7 @@ export function SharedPollScreen({ poll, initialResults, onGoToPortal }) {
     <div style={{ background:theme.bg, minHeight:"100dvh", maxWidth:430, margin:"0 auto", display:"flex", flexDirection:"column", fontFamily:"Inter, sans-serif" }}>
 
       {/* Minimal header — no nav, no search, just brand */}
-      <div onClick={onGoToPortal} style={{ height:64, padding:"0 16px", borderBottom:`1px solid ${theme.border}`, display:"flex", alignItems:"center", gap:8, cursor: onGoToPortal ? "pointer" : "default", flexShrink:0 }}>
+      <div onClick={goToPortal} style={{ height:64, padding:"0 16px", borderBottom:`1px solid ${theme.border}`, display:"flex", alignItems:"center", gap:8, cursor:"pointer", flexShrink:0 }}>
         <div style={{ width:28, height:28, borderRadius:"50%", background:theme.accentDim, border:`1px solid ${theme.borderAccent}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, color:theme.accent, fontWeight:700 }}>S</div>
         <div>
           <div style={{ display:"flex", alignItems:"baseline", gap:2 }}>
@@ -189,7 +192,7 @@ export function SharedPollScreen({ poll, initialResults, onGoToPortal }) {
           <BarChart2 size={26} color={theme.accent} strokeWidth={1.5} style={{ marginBottom:10 }}/>
           <p style={{ color:theme.text, fontFamily:"'Plus Jakarta Sans', sans-serif", fontSize:15, fontWeight:700, margin:"0 0 6px" }}>Zobacz więcej sond na sondal.top</p>
           <p style={{ color:theme.textMuted, fontFamily:"Inter, sans-serif", fontSize:12, margin:"0 0 14px", lineHeight:1.5 }}>Fakty zestawione z opinią ludzi. Dane GUS, Banku Światowego i tysięcy głosów społeczności.</p>
-          <button onClick={onGoToPortal} style={{ background:theme.accent, color:"#fff", border:"none", borderRadius:10, padding:"11px 24px", fontFamily:"'Plus Jakarta Sans', sans-serif", fontSize:13, fontWeight:700, cursor: onGoToPortal ? "pointer" : "default" }}>
+          <button onClick={goToPortal} style={{ background:theme.accent, color:"#fff", border:"none", borderRadius:10, padding:"11px 24px", fontFamily:"'Plus Jakarta Sans', sans-serif", fontSize:13, fontWeight:700, cursor:"pointer" }}>
             Odkryj portal →
           </button>
         </div>
@@ -201,5 +204,4 @@ export function SharedPollScreen({ poll, initialResults, onGoToPortal }) {
     </div>
   );
 }
-
 

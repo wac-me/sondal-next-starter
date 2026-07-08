@@ -119,7 +119,16 @@ export function SondalApp({ communityPolls: initialPolls = [], editorialPolls = 
   const handleNavChange    = (id) => { if (id === "create") { openCreator(); return; } setActiveNav(id); };
   const handleReset        = () => { setPollData(null); setCreatorStep("form"); };
   const handleGoToDiscover = () => { closeCreator(); setActiveNav("discover"); };
-  const goHome             = () => { setActiveNav("discover"); setShowTrending(false); };
+  const goHome             = () => {
+    setActiveNav("discover");
+    setShowTrending(false);
+    setTrendingDetailId(null);
+    setTrendingDetailAnim("closed");
+    setShowSharedPoll(false);
+    setShowEmbedPreview(false);
+    setCreatorOpen(false);
+    setCreatorAnim("closed");
+  };
 
   const isOpen = creatorAnim === "open" || creatorAnim === "opening";
   const sheetY = creatorAnim === "open" ? "0%" : "100%";
@@ -145,6 +154,7 @@ export function SondalApp({ communityPolls: initialPolls = [], editorialPolls = 
             editorialPolls={editorialPolls}
             onGoToCreate={openCreator}
             onShowTrending={() => setShowTrending(true)}
+            onGoHome={goHome}
           />
         )}
         {activeNav === "discuss" && <DiscussScreen onGoHome={goHome} />}
@@ -164,12 +174,12 @@ export function SondalApp({ communityPolls: initialPolls = [], editorialPolls = 
       {showTrending && (
         <div style={{ position: "absolute", inset: 0, zIndex: 200, background: theme.bg, display: "flex", flexDirection: "column" }}>
           <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-            <TrendingNowScreen onBack={() => setShowTrending(false)} onPollOpen={openTrendingDetail} />
+            <TrendingNowScreen onBack={() => setShowTrending(false)} onGoHome={goHome} onPollOpen={openTrendingDetail} />
           </div>
           <BottomNav active={activeNav} setActive={(id) => { setShowTrending(false); handleNavChange(id); }} />
           {trendingDetailId !== null && (
             <div style={{ position: "absolute", inset: 0, zIndex: 50, transform: trendingDetailAnim === "open" ? "translateX(0)" : "translateX(100%)", transition: (trendingDetailAnim === "open" || trendingDetailAnim === "closing") ? "transform 0.38s cubic-bezier(.22,.68,0,1.1)" : "none" }}>
-              <SondaDetail pollId={trendingDetailId} onClose={closeTrendingDetail} />
+              <SondaDetail pollId={trendingDetailId} onClose={closeTrendingDetail} onGoHome={goHome} />
             </div>
           )}
         </div>
@@ -179,12 +189,13 @@ export function SondalApp({ communityPolls: initialPolls = [], editorialPolls = 
       {creatorOpen && (
         <div style={{ position: "absolute", inset: 0, zIndex: 500, background: theme.bg, display: "flex", flexDirection: "column", transform: `translateY(${sheetY})`, transition: "transform 0.4s cubic-bezier(.4,0,.2,1)" }}>
           <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
-            {creatorStep === "form" && <CreatorScreen onSuccess={handleSuccess} onClose={closeCreator} />}
+            {creatorStep === "form" && <CreatorScreen onSuccess={handleSuccess} onClose={closeCreator} onGoHome={goHome} />}
             {creatorStep === "success" && (
               <SuccessScreen
                 pollData={pollData}
                 onReset={handleReset}
                 onGoToDiscover={handleGoToDiscover}
+                onGoHome={goHome}
                 onPreviewShared={() => setShowSharedPoll(true)}
                 onPreviewEmbed={() => setShowEmbedPreview(true)}
               />
@@ -196,7 +207,7 @@ export function SondalApp({ communityPolls: initialPolls = [], editorialPolls = 
       {/* ── Shared Poll ── */}
       {showSharedPoll && (
         <div style={{ position: "absolute", inset: 0, zIndex: 900 }}>
-          <SharedPollScreen onGoToPortal={() => { setShowSharedPoll(false); setCreatorOpen(false); setCreatorAnim("closed"); setActiveNav("discover"); }} />
+          <SharedPollScreen onGoToPortal={goHome} />
         </div>
       )}
 
